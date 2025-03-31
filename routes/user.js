@@ -3,6 +3,7 @@ import {z} from "zod";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { UserModel } from "../src/db.js";
+import { JWT_SECRET } from "../config.js";
 export const userRouter = express.Router();
 
 // Validation Schema , as we need to validate the data coming from the user
@@ -80,3 +81,59 @@ const signUpHandler = async(req , res) => {
 }
 
 userRouter.post("/signup" , signUpHandler);
+const signinSchema = z.object({
+    username : usernameSchema,
+    password : passwordSchema
+})
+const signinHandler = async(req,res) => {
+ try{
+    // First of all validate the data
+    const userData = signinSchema.parse(req.body);
+    
+    //Check the entry in the db 
+    const user = await UserModel.findOne({
+        username : userData.username
+    })
+
+    if(!user) // if no such user exists
+    {
+      return res.status(403).json({
+        message : "No such user exists"
+      })
+    }
+
+    const isMatch = await bcrypt.compare(userData.password , user.password);
+    if(!isMatch)
+    {
+        return res.status(403).json({
+            message : "Incorrect Password Entered"
+        })
+    }
+    const userId = user._id;
+
+    // If the password matches , then we have to return the user a jwt token that can be used in all the authenticated end points in the future
+    const token = jwt.sign({
+        userId : userId
+    } , JWT_SECRET);
+
+    res.json({
+        token : token
+    })
+
+ }catch(error){
+    if(error instanceof z.ZodError)
+    {
+       return res.status(411).json({
+            message : "There is Some Error in the user Input",
+            error : error.errors
+        })
+    }
+    console.error("There was some error: ", error)
+    return res.status(500).json({
+        message : "Some error occured in the server"
+    })
+ }
+
+}
+
+userRouter.post("/signin" , signinHandler);
