@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { UserModel } from "../src/db.js";
 import { JWT_SECRET } from "../config.js";
+import { authMiddleware } from "../src/middleware.js";
 export const userRouter = express.Router();
 
 // Validation Schema , as we need to validate the data coming from the user
@@ -137,3 +138,46 @@ const signinHandler = async(req,res) => {
 }
 
 userRouter.post("/signin" , signinHandler);
+const updateSchema = z.object({
+    password : z.string().min(6 , "The password must be at least 6 characters long").optional(),
+    firstName : z.string().max(50 ,"The maximimum length allowed for firstName is 50 characters only").optional(),
+    lastName :   z.string().max(50 ,"The maximimum length allowed for lastName is 50 characters only").optional()
+})
+const updateHandler = async(req,res) => {
+    try{
+        const updateData = updateSchema.parse(req.body);
+        const userId = req.userId;
+
+        if(updateData.password)
+        {
+            //i.e if the password exists , we need to hash it before insertig it into the database
+            const hashedPassword = await hashPassword(updateData.password);
+            //modify the password field of updateData
+            updateData.password = hashedPassword;
+        }
+
+        await UserModel.updateOne({
+            _id : userId
+        }, updateData);
+
+        res.json({
+            message : "Information updated successfully"
+        })
+
+    }catch(error){
+        if(error instanceof z.ZodError)
+        {
+            return res.status(411).json({
+                message : "Error while updating Information",
+                error : error.errors
+            })
+        }
+        console.error("There was some error : ",error)
+        return res.status(500).json({
+            message : "There was some problem"
+        })
+    }
+}
+
+
+userRouter.put("/update" , authMiddleware, updateHandler);
