@@ -1,5 +1,6 @@
 import mongoose, { model, Schema } from "mongoose";
 import { MONGO_URL } from "../config.js";
+import { number } from "zod";
 mongoose.connect(MONGO_URL);
 
 const userSchema = new Schema({
@@ -10,3 +11,11 @@ const userSchema = new Schema({
 })
 // User Model
 export const UserModel = model('User' , userSchema);
+
+// We need to create another schema named as account schema 
+const accountSchema = new Schema({
+    userId : {type : mongoose.Schema.Types.ObjectId , ref : 'User' , required: true},
+    balance : {type : number , required : true}
+})
+
+export const accountModel = model('Account' , accountSchema);
