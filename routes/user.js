@@ -181,3 +181,4 @@ const updateHandler = async(req,res) => {
 
 
 userRouter.put("/update" , authMiddleware, updateHandler);
+
