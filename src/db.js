@@ -15,7 +15,7 @@ export const UserModel = model('User' , userSchema);
 // We need to create another schema named as account schema 
 const accountSchema = new Schema({
     userId : {type : mongoose.Schema.Types.ObjectId , ref : 'User' , required: true},
-    balance : {type : number , required : true}
+    balance : {type : Number , required : true}
 })
 
 export const accountModel = model('Account' , accountSchema);

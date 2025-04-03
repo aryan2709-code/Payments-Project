@@ -2,7 +2,7 @@ import express from "express";
 import {z} from "zod"; 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { UserModel } from "../src/db.js";
+import { accountModel, UserModel } from "../src/db.js";
 import { JWT_SECRET } from "../config.js";
 import { authMiddleware } from "../src/middleware.js";
 export const userRouter = express.Router();
@@ -54,11 +54,19 @@ const signUpHandler = async(req , res) => {
         const hashedPass = await hashPassword(validData.password);
 
         // Save to database 
-        await UserModel.create({
+       const user = await UserModel.create({
             username : validData.username,
             password : hashedPass,
             firstName : validData.firstName,
             lastName : validData.lastName
+        })
+
+        //We need to assign the user a random balance between 1 and 10000
+        const userId = user._id;
+        await accountModel.create({
+            userId : userId,
+            balance : 1 + Math.random() * 10000
+
         })
 
         return res.status(200).json({
