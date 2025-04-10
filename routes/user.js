@@ -8,13 +8,13 @@ import { authMiddleware } from "../src/middleware.js";
 export const userRouter = express.Router();
 
 // Validation Schema , as we need to validate the data coming from the user
-const usernameSchema = z.string().min(3 , "The Username Should be between 3 and 30 letters").max(30);
+const usernameSchema = z.string().min(3 , "Length of username should be between 3 and 30 letters").max(30);
 const passwordSchema = z.string()
 .min(6 , "The Password must at least contain 6 characters");
 const lastnameSchema = z.string()
-.max(50 , "LastName Should contain 50 characters at most ");
+.max(50 , "LastName Should not contain more than 50 characters.");
 const firstnameSchema = z.string()
-.max(50 , "The First name must contain 50 characters at max.");
+.max(50 , "First name must not have more than 50 characters.");
 
 // Wrap the above four schemas in a single final zod schema
 const SignUpSchema = z.object({
@@ -45,7 +45,7 @@ const signUpHandler = async(req , res) => {
 
         if(existingUser)
         {
-            return res.status(411).json({
+            return res.status(403).json({
                 message : "User Already exists with this username"
             })
         }
