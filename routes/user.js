@@ -191,17 +191,19 @@ const updateHandler = async(req,res) => {
 userRouter.put("/update" , authMiddleware, updateHandler);
 
 // Writing a route to get all the users enrolled in the application based on a query parameter
-userRouter.get("/bulk" , async(req,res) => {
+userRouter.get("/bulk" , authMiddleware,  async(req,res) => {
     const filter = req.query.filter || "";
 
     const users = await UserModel.find({
         $or : [{
             firstName : {
-                "$regex" : filter
+                "$regex" : filter,
+                $options : 'i'
             }
         },{
             lastName : {
-                "$regex" : filter
+                "$regex" : filter,
+                $options : 'i'
             }
         }]
     })
