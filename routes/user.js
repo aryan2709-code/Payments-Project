@@ -219,3 +219,14 @@ userRouter.get("/bulk" , authMiddleware,  async(req,res) => {
     })
 })
 
+// Writing  a route to get the First Name Of the User 
+userRouter.get("/firstName" , authMiddleware , async(req,res) => {
+   const user =   await UserModel.findOne({
+        _id : req.userId
+    })
+
+    res.json({
+        firstName : user.firstName
+    })
+})
+
