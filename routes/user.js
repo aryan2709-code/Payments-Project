@@ -15,13 +15,15 @@ const lastnameSchema = z.string()
 .max(50 , "LastName Should not contain more than 50 characters.");
 const firstnameSchema = z.string()
 .max(50 , "First name must not have more than 50 characters.");
+const pinSchema = z.string().min(4 , "The pin must have eaxtly four characters.").max(4, "The pin must have eaxtly four characters.")
 
 // Wrap the above four schemas in a single final zod schema
 const SignUpSchema = z.object({
     username :  usernameSchema,
     password :  passwordSchema,
     firstName : firstnameSchema,
-    lastName :  lastnameSchema 
+    lastName :  lastnameSchema,
+    pin : pinSchema
 });
 
 // Write a function to hash the password . If the user entry is valid , then we need to enter the hashed password into the database , not the original password.
@@ -52,13 +54,15 @@ const signUpHandler = async(req , res) => {
 
         // If this user is a new user , first create the hashed password and then make an entry to the database
         const hashedPass = await hashPassword(validData.password);
+        const hashedPin = await hashPassword(validData.pin);
 
         // Save to database 
        const user = await UserModel.create({
             username : validData.username,
             password : hashedPass,
             firstName : validData.firstName,
-            lastName : validData.lastName
+            lastName : validData.lastName,
+            pin : validData.pin
         })
 
         //We need to assign the user a random balance between 1 and 10000
