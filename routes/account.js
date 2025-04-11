@@ -35,21 +35,21 @@ accountRouter.post("/transfer", authMiddleware, async (req, res) => {
             return res.status(400).json({ message: "Invalid amount. Must be greater than zero." });
         }
         if (req.userId === to) {
-            return res.status(400).json({ message: "You cannot transfer money to yourself." });
+            return res.status(401).json({ message: "You cannot transfer money to yourself." });
         }
 
         const account = await accountModel.findOne({ userId: req.userId }).session(session);
         if (!account || account.balance < amount) {
             await session.abortTransaction();
             session.endSession();
-            return res.status(400).json({ message: "Insufficient Balance" });
+            return res.status(402).json({ message: "Insufficient Balance" });
         }
 
         const toAccount = await accountModel.findOne({ userId: to }).session(session);
         if (!toAccount) {
             await session.abortTransaction();
             session.endSession();
-            return res.status(400).json({ message: "Invalid account, no such account exists" });
+            return res.status(403).json({ message: "Invalid account, no such account exists" });
         }
 
 
@@ -65,7 +65,7 @@ accountRouter.post("/transfer", authMiddleware, async (req, res) => {
     } catch (error) {
         await session.abortTransaction();
         session.endSession(); // Ensure session cleanup
-        return res.status(400).json({ message: "Transaction Failed", error: error.message });
+        return res.status(404).json({ message: "Transaction Failed", error: error.message });
     }
 });
 
