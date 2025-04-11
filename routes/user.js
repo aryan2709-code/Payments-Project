@@ -193,6 +193,7 @@ userRouter.put("/update" , authMiddleware, updateHandler);
 // Writing a route to get all the users enrolled in the application based on a query parameter
 userRouter.get("/bulk" , authMiddleware,  async(req,res) => {
     const filter = req.query.filter || "";
+    const requesterId = req.userId;
 
     const users = await UserModel.find({
         $or : [{
@@ -214,7 +215,7 @@ userRouter.get("/bulk" , authMiddleware,  async(req,res) => {
             firstName : user.firstName,
             lastName : user.lastName,
             _id : user._id
-        }))
+        })).filter(user => user._id != requesterId)
     })
 })
 
