@@ -153,7 +153,8 @@ userRouter.post("/signin" , signinHandler);
 const updateSchema = z.object({
     password : z.string().min(6 , "The password must be at least 6 characters long").optional(),
     firstName : z.string().max(50 ,"The maximimum length allowed for firstName is 50 characters only").optional(),
-    lastName :   z.string().max(50 ,"The maximimum length allowed for lastName is 50 characters only").optional()
+    lastName :   z.string().max(50 ,"The maximimum length allowed for lastName is 50 characters only").optional(),
+    pin : z.string().max(4, "The pin must contain exactly 4 characters").min(4 ,  "The pin must contain exactly 4 characters" ).optional()
 })
 const updateHandler = async(req,res) => {
     try{
@@ -166,6 +167,11 @@ const updateHandler = async(req,res) => {
             const hashedPassword = await hashPassword(updateData.password);
             //modify the password field of updateData
             updateData.password = hashedPassword;
+        }
+        if(updateData.pin)
+        {
+            const hashedPin = await hashPassword(updateData.pin);
+            updateData.pin = hashedPin
         }
 
         await UserModel.updateOne({
